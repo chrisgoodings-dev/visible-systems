@@ -1,0 +1,7 @@
+# CSV
+.\build\labs\memory\vs_mem_layout.exe 5000000 20 | Out-File results.csv
+python tools\plot_results.py --csv results.csv --title "AoS vs SoA"
+
+# JSON
+.\build\labs\memory\vs_mem_layout.exe 5000000 20 --out .\out\layout
+python tools\plot_results.py --jsondir .\out\layout --title "AoS vs SoA (JSON)"

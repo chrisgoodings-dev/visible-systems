@@ -1,0 +1,35 @@
+name: windows-msvc-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (Release)
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -j
+
+      - name: Run benches (small CI sizes)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path out | Out-Null
+          .\build\labs\memory\Release\vs_mem_allocation.exe 20000 5 --out .\out\allocation | Out-File .\out\allocation.csv
+          .\build\labs\memory\Release\vs_mem_layout.exe     500000 5 --out .\out\layout     | Out-File .\out\layout.csv
+          .\build\labs\memory\Release\vs_mem_access.exe     2000000 5 16 12345 --out .\out\access | Out-File .\out\access.csv
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: visible-systems-results
+          path: out
+
+      - name: Notes
+        run: |
+          echo "CI timings are noisy by nature; use them only as a smoke test."
